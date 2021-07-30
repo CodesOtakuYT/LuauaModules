@@ -51,29 +51,6 @@ local function UpdateTasks()
 	end
 end
 
--- Returns the 'id' of the newly created task,
--- Call the function 'callback' after the specified 'duration' passing the extra parameters '...'.
-function Timer.Delay(callback, duration, ...)
-	local startTime = os.clock()
-	duration = duration or 0
-	local typeOfCallback = typeof(callback)
-
-	if typeOfCallback ~= "function" then
-		error("Callback is expected to be a function, got '"..typeOfCallback.."'")
-	end
-
-	local id = #Tasks + 1
-
-	table.insert(Tasks, id, {
-		StartTime = startTime,
-		Timeout = startTime + duration,
-		Callback = callback,
-		Params = {...}
-	})
-
-	return id
-end
-
 function Timer.SetUpdateEvent(event)
 	if not (typeof(event) == "RBXScriptSignal") then
 		error("the returned event should be a roblox event signal.")
@@ -169,11 +146,13 @@ local function Initialize()
 	return Timer
 end
 
+-- Returns the Event Connection, Connect 'callback' to the 'event' and restrict it's execution until the 'cooldown' of the last event call,
+-- The callback get called with the following parameters Callback(EventParams..., elapsedTime, DebounceParams...)
 function Timer.Debounce(event, callback, cooldown, ...)
 	local params = {}
 	local lastTime = 0
 
-	event:Connect(function(...)
+	return event:Connect(function(...)
 		local now = os.clock()
 		local elapsedTime = now - lastTime
 		
@@ -182,6 +161,29 @@ function Timer.Debounce(event, callback, cooldown, ...)
 			callback(..., elapsedTime, table.unpack(params))
 		end
 	end)
+end
+
+-- Returns the 'id' of the newly created task,
+-- Call the function 'callback' after the specified 'duration' passing the extra parameters '...'.
+function Timer.Delay(callback, duration, ...)
+	local startTime = os.clock()
+	duration = duration or 0
+	local typeOfCallback = typeof(callback)
+
+	if typeOfCallback ~= "function" then
+		error("Callback is expected to be a function, got '"..typeOfCallback.."'")
+	end
+
+	local id = #Tasks + 1
+
+	table.insert(Tasks, id, {
+		StartTime = startTime,
+		Timeout = startTime + duration,
+		Callback = callback,
+		Params = {...}
+	})
+
+	return id
 end
 
 return Initialize()
