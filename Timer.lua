@@ -150,7 +150,7 @@ end
 -- The callback get called with the following parameters Callback(EventParams..., elapsedTime, DebounceParams...)
 function Timer.Debounce(event, callback, cooldown, ...)
 	local params = {}
-	local lastTime = 0
+	local lastTime = os.clock()
 
 	return event:Connect(function(...)
 		local now = os.clock()
